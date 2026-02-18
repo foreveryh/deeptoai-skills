@@ -26,7 +26,6 @@ clawdhub install <skill-name>
 | Skill | 描述 |
 |-------|------|
 | [fumadocs-writing](skills/fumadocs-writing) | Fumadocs 站点的 MDX 文档写作 |
-| [web-search-zai](skills/web-search-zai) | 智谱 AI Web Search API 集成 |
 
 ### fumadocs-writing
 
@@ -38,23 +37,11 @@ clawdhub install <skill-name>
 - Callouts, Cards, Tabs 组件
 - Shiki 代码高亮
 
-### web-search-zai
-
-使用智谱 AI 的 web_search API 进行网络搜索。
-
-**特性：**
-- 实时网络搜索
-- 中文优化
-- API Key 自动检测
-
 ## 通过 ClawdHub 安装
 
 ```bash
 # 安装 fumadocs-writing
 clawdhub install fumadocs-writing
-
-# 安装 web-search-zai
-clawdhub install web-search-zai
 ```
 
 ## 许可证

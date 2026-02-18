@@ -28,7 +28,6 @@ clawdhub install <skill-name>
 | Skill | Description |
 |-------|-------------|
 | [fumadocs-writing](skills/fumadocs-writing) | MDX documentation writing for Fumadocs-powered sites |
-| [web-search-zai](skills/web-search-zai) | Zhipu AI Web Search API integration |
 
 ### fumadocs-writing
 
@@ -40,23 +39,11 @@ Create well-structured, Fumadocs-compliant MDX documentation with proper frontma
 - Callouts, Cards, Tabs components
 - Code highlighting with Shiki
 
-### web-search-zai
-
-Search the web using Zhipu AI's web_search API.
-
-**Features:**
-- Real-time web search
-- Chinese language optimized
-- API key auto-detection
-
 ## Installation via ClawdHub
 
 ```bash
 # Install fumadocs-writing
 clawdhub install fumadocs-writing
-
-# Install web-search-zai
-clawdhub install web-search-zai
 ```
 
 ## License
