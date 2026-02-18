@@ -1,0 +1,8 @@
+{
+  "name": "web-search-zai",
+  "version": "1.1.0",
+  "description": "On-demand Zhipu web_search via curl; no background server",
+  "author": "kangweihao",
+  "license": "MIT"
+}
+
