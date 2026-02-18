@@ -1,6 +1,6 @@
-# Xiong Skills 🦞
+# deeptoai-skills 🦞
 
-Skills crafted by Xiong Bulang (熊布朗) for enhancing productivity with OpenClaw/Claude Code.
+Skills crafted by DeepToAI team for enhancing productivity with OpenClaw/Claude Code.
 
 English | [中文](README.zh.md)
 
@@ -14,7 +14,7 @@ English | [中文](README.zh.md)
 ### Quick Install
 
 ```bash
-npx skills add <your-github-username>/xiong-skills
+npx skills add <github-username>/deeptoai-skills
 ```
 
 ### Or via ClawdHub

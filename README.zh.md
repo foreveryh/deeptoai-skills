@@ -1,6 +1,6 @@
-# Xiong Skills 🦞
+# deeptoai-skills 🦞
 
-熊布朗制作的 Skills，用于提升 OpenClaw/Claude Code 的工作效率。
+DeepToAI 团队制作的 Skills，用于提升 OpenClaw/Claude Code 的工作效率。
 
 ## 前置要求
 
@@ -12,7 +12,7 @@
 ### 快速安装
 
 ```bash
-npx skills add <your-github-username>/xiong-skills
+npx skills add <github-username>/deeptoai-skills
 ```
 
 ### 或通过 ClawdHub
