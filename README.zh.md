@@ -12,7 +12,7 @@ DeepToAI 团队制作的 Skills，用于提升 OpenClaw/Claude Code 的工作效
 ### 快速安装
 
 ```bash
-npx skills add <github-username>/deeptoai-skills
+npx skills add foreveryh/deeptoai-skills
 ```
 
 ### 或通过 ClawdHub

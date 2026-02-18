@@ -14,7 +14,7 @@ English | [中文](README.zh.md)
 ### Quick Install
 
 ```bash
-npx skills add <github-username>/deeptoai-skills
+npx skills add foreveryh/deeptoai-skills
 ```
 
 ### Or via ClawdHub
@@ -28,7 +28,7 @@ clawdhub install <skill-name>
 | Skill | Description |
 |-------|-------------|
 | [fumadocs-writing](skills/fumadocs-writing) | MDX documentation writing for Fumadocs-powered sites |
-| [web-search-zai](skills/web-search-zai) | 智谱 AI Web Search API integration |
+| [web-search-zai](skills/web-search-zai) | Zhipu AI Web Search API integration |
 
 ### fumadocs-writing
 
