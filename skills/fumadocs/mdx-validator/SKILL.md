@@ -1,18 +1,72 @@
 ---
 name: mdx-validator
 description: >
-  MDX 语法预检查，在构建前发现并修复常见问题。检查特殊字符、图片路径、
-  Frontmatter 格式等。在 article-translator 翻译后、pnpm build 前使用。
-version: 1.0.0
+  MDX 语法预检查工具。**推荐**：先使用 eslint-mdx 和 prettier 进行基础检查，
+  再使用本 skill 进行 Fumadocs 特定问题的专项检查（图片文件名、翻译完整性）。
+  在 article-translator 翻译后、pnpm build 前使用。
+version: 1.2.0
 ---
 
 # MDX Validator
 
-MDX 语法预检查工具，在构建前发现并自动修复常见问题。
+MDX 语法预检查工具，**补充**现有工具（eslint-mdx, prettier）。
 
-## 检查项
+## 🎯 设计理念
 
-### 1. 特殊字符检查
+### 与现有工具的关系
+
+```
+eslint-mdx (基础 MDX 检查)
+    +
+prettier (格式化)
+    +
+mdx-validator (Fumadocs 专项检查) ← 你在这里
+    ↓
+完整的 MDX 质量保证
+```
+
+**为什么需要本 skill**:
+- eslint-mdx 不检查图片文件名规范
+- prettier 不检查翻译完整性
+- 现有工具没有 Fumadocs 特定问题的检查
+
+## 📦 前置条件
+
+### 推荐安装（可选）
+
+```bash
+# 1. 安装 eslint-mdx（官方 MDX 检查工具）
+npm install -D eslint-plugin-mdx
+
+# 2. 安装 prettier（MDX 格式化）
+npm install -D prettier
+
+# 3. 创建配置
+echo '{"extends":["plugin:mdx/recommended"]}' > .eslintrc.json
+```
+
+## 🔍 检查项
+
+### Step 0: 使用现有工具（如果有）
+
+```bash
+# 检查是否有 eslint-mdx
+if [ -f "node_modules/eslint-plugin-mdx" ]; then
+  echo "✅ 发现 eslint-mdx，运行检查..."
+  npx eslint "**/*.mdx" --fix
+else
+  echo "⚠️  未安装 eslint-mdx，跳过基础检查"
+  echo "   推荐: npm install -D eslint-plugin-mdx"
+fi
+
+# 检查是否有 prettier
+if [ -f "node_modules/prettier" ]; then
+  echo "✅ 发现 prettier，格式化..."
+  npx prettier --write "**/*.mdx"
+fi
+```
+
+### Step 1: 特殊字符检查（MDX 语法）
 
 **问题字符**:
 - `<` - 被解析为 JSX 标签
@@ -77,44 +131,89 @@ grep -n '^```[^a-z]*$' *.mdx | grep -v '^.*:.*````*$'
 
 ### 5. 翻译完整性检查
 
-**检测未翻译内容**:
+**改进后的检测逻辑**:
 
 ```bash
-# 检查中文文件中的英文单词
-for f in content/docs/zh-CN/*.mdx; do
-  english=$(grep -oE '\b(is|the|and|to|for|with|from)\b' "$f" | wc -l)
-  if [ $english -gt 10 ]; then
-    echo "⚠️  $f: 可能未翻译（发现 $english 个英文单词）"
-  fi
-done
+# 1. 定义常见的英文技术术语（不应被检测为未翻译）
+TECH_TERMS=(
+  "React|TypeScript|JavaScript|Node\.js|npm|yarn|pnpm"
+  "API|SDK|CLI|GUI|IDE|JSON|YAML|XML|HTTP|HTTPS"
+  "CSS|HTML|SQL|NoSQL|REST|GraphQL"
+  "Git|GitHub|GitLab|Bitbucket"
+  "Docker|Kubernetes|AWS|GCP|Azure"
+  "MacOS|Windows|Linux|Ubuntu|Debian"
+  "CDN|DNS|SSL|TLS|OAuth|JWT"
+)
 
-# 检查文件内容是否与英文版相同
+# 合并为正则表达式
+TECH_REGEX=$(IFS="|"; echo "${TECH_TERMS[*]}")
+
+# 2. 检查中文文件中的英文单词（排除技术术语）
 for f in content/docs/zh-CN/*.mdx; do
-  en_file="${f/zh-CN/en}"
-  if [ -f "$en_file" ]; then
-    if diff -q "$f" "$en_file" > /dev/null 2>&1; then
-      echo "❌ $f: 内容与英文版相同，未翻译！"
+  # 统计英文单词数量（排除技术术语）
+  english=$(grep -oE '\b[A-Za-z]+\b' "$f" | \
+    grep -v -E "^($TECH_REGEX)$" | \
+    wc -l)
+
+  # 统计总词数
+  total=$(wc -w < "$f")
+
+  # 计算英文占比
+  if [ $total -gt 0 ]; then
+    ratio=$((english * 100 / total))
+    if [ $ratio -gt 20 ]; then
+      echo "⚠️  $f: 英文占比 ${ratio}%，可能未翻译"
     fi
   fi
 done
-```
 
-**检查 frontmatter 翻译**:
+# 3. 检查正文内容是否与英文版相同（排除 frontmatter）
+for f in content/docs/zh-CN/*.mdx; do
+  en_file="${f/zh-CN/en}"
+  if [ -f "$en_file" ]; then
+    # 提取正文（跳过前 10 行 frontmatter）
+    zh_body=$(tail -n +10 "$f")
+    en_body=$(tail -n +10 "$en_file")
 
-```bash
-# 确保 title 和 description 已翻译
-for f in *.mdx; do
-  title=$(grep '^title:' "$f" | head -1)
-  desc=$(grep '^description:' "$f" | head -1)
-
-  # 如果是中文文件但 title 包含英文
-  if [[ "$f" == *"zh-CN"* ]] && echo "$title" | grep -qE '[A-Za-z]{5,}'; then
-    echo "⚠️  $f: title 可能未翻译"
+    if [ "$zh_body" = "$en_body" ]; then
+      echo "❌ $f: 正文内容与英文版相同，未翻译！"
+    fi
   fi
+done
+
+# 4. 智能检测（基于句子级别）
+for f in content/docs/zh-CN/*.mdx; do
+  # 提取包含大量英文的句子
+  grep -nE '^[^#]*[A-Za-z]{20,}[^#]*$' "$f" | \
+    grep -v '```' | \
+    grep -v '<!--' | \
+    head -5
 done
 ```
 
+**更智能的检测**:
+
+```bash
+# 使用 MDX AST 解析（更准确）
+# 需要安装: npm install -D remark remark-mdx
+
+npx remark content/docs/zh-CN/article.mdx \
+  --use remark-mdx \
+  --tree | \
+  jq '.. | .value? | select(. != null) | select(test("[A-Za-z]{10,}"))'
+```
+
 ## 自动修复
+
+### 优先使用 prettier
+
+```bash
+# 如果有 prettier，优先使用
+if command -v prettier &> /dev/null; then
+  echo "✅ 使用 prettier 格式化..."
+  prettier --write "**/*.mdx"
+fi
+```
 
 ### 修复特殊字符
 
@@ -151,7 +250,27 @@ done
 
 ## 使用方式
 
-### 方式 1: 完整检查
+### 方式 1: 完整检查（推荐）
+
+```bash
+# 1. 基础检查（如果有 eslint-mdx）
+if [ -f "node_modules/eslint-plugin-mdx" ]; then
+  npx eslint "**/*.mdx" --fix
+fi
+
+# 2. 格式化（如果有 prettier）
+if [ -f "node_modules/prettier" ]; then
+  npx prettier --write "**/*.mdx"
+fi
+
+# 3. Fumadocs 专项检查
+mdx-validator --check-images --check-translation
+
+# 4. 自动修复剩余问题
+mdx-validator --fix
+```
+
+### 方式 2: 仅使用 mdx-validator
 
 ```bash
 # 检查单个文件
@@ -216,12 +335,34 @@ fumadocs-article-importer (导入文章)
          ↓
 article-translator (翻译内容)
          ↓
-mdx-validator ← 你在这里（预检查）
+┌────────┴────────┐
+│  eslint-mdx     │ ← 基础 MDX 检查（推荐）
+│  prettier       │ ← 格式化（推荐）
+└────────┬────────┘
+         ↓
+mdx-validator ← 你在这里（Fumadocs 专项检查）
          ↓
 pnpm build:docs (构建)
          ↓
 fumadocs-deploy (部署验证)
 ```
+
+## 🆚 与现有工具对比
+
+| 检查项 | eslint-mdx | prettier | **mdx-validator** |
+|--------|-----------|----------|-------------------|
+| MDX JSX 语法 | ✅ | - | - |
+| Markdown 语法 | ✅ | - | - |
+| 代码风格 | - | ✅ | - |
+| **特殊字符（MDX）** | - | - | ✅ |
+| **图片文件名** | - | - | ✅ |
+| **翻译完整性** | - | - | ✅ |
+| **Fumadocs 特定** | - | - | ✅ |
+
+**结论**:
+- 使用 eslint-mdx + prettier 进行**基础检查**
+- 使用 mdx-validator 进行**专项检查**
+- 三者**互补**，不冲突
 
 ## 常见问题
 
