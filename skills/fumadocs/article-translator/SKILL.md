@@ -106,7 +106,36 @@ Apply professional translation principles:
 - Technical terms: Use industry-standard terminology
 - Tone: Professional but accessible
 
-### Step 4: Quality Check
+### Step 4: MDX Safety Rules (Critical!)
+
+**MDX 特殊字符处理（必须遵守）**:
+
+| 字符 | 问题 | 解决方案 | 示例 |
+|------|------|----------|------|
+| `<` | 被解析为 JSX 标签 | 使用 `&lt;` 或替换为文字 | `<5%` → `&lt;5%` 或 `under 5%` |
+| `>` | 被解析为 JSX 标签 | 使用 `&gt;` 或替换为文字 | `>80%` → `&gt;80%` 或 `over 80%` |
+| `{` `}` | 被解析为 JSX 表达式 | 使用 `&#123;` `&#125;` 或避免使用 | `{variable}` → `&#123;variable&#125;` |
+| `&` | HTML 实体冲突 | 使用 `&amp;` | `A & B` → `A &amp; B` |
+
+**图片文件名规则（重要！）**:
+
+```
+❌ 错误：img-1.png, screenshot-10.png（MDX 会解析 -1, -10）
+✅ 正确：img01.png, screenshot10.png, openclaw01.png（无连字符+数字）
+```
+
+**翻译后自检清单**:
+
+```markdown
+- [ ] 所有 `<` 已替换为 `&lt;` 或 "under/less than"
+- [ ] 所有 `>` 已替换为 `&gt;` 或 "over/more than"
+- [ ] 图片文件名不含连字符+数字（img-1 → img01）
+- [ ] 代码块保持原样（包括注释）
+- [ ] Frontmatter 格式正确
+- [ ] Markdown 链接和图片引用正确
+```
+
+### Step 5: Quality Check
 
 Before delivering translation:
 1. Verify all code blocks remain unchanged
@@ -114,6 +143,7 @@ Before delivering translation:
 3. Ensure technical terms are handled consistently
 4. Confirm the translation reads naturally in the target language
 5. Validate that links, images, and references still work
+6. **Run MDX safety check** (Step 4)
 
 ## Output Format
 

@@ -14,79 +14,45 @@ Import external articles into a Fumadocs project with tri-language support (en, 
 ## Prerequisites
 
 - Fumadocs project initialized
-- **Jina MCP** configured (recommended) - see `references/jina-mcp-setup.md`
-- **Translator Skill** available for professional translation
-- `curl` installed for image downloads
+- **Jina API Key** configured (必需)
+- `curl` installed for article fetch and image downloads
 - Write access to `content/docs/` and `public/images/`
 
-## Critical Requirements
+## Configuration
 
-### 0. Jina MCP Configuration (必需)
+### Jina API Key 配置（必需）
 
-**需要 Jina API Key** - 在 skill 执行前必须配置！
-
-#### 获取 API Key
+**Step 1: 获取 API Key**
 
 1. 访问 https://jina.ai/reader
 2. 注册/登录账号
 3. 在 Dashboard 生成 API Key（格式：`jina_xxxxxxxxxxxx`）
 
-#### 配置到 Moltbot
+**Step 2: 配置到环境变量**
 
-编辑 `~/.clawdbot/moltbot.json`，添加 MCP Server：
+编辑 `~/.clawdbot/moltbot.json`：
 
 ```json
 {
-  "mcpServers": {
-    "jina": {
-      "url": "https://mcp.jina.ai/sse",
-      "headers": {
-        "Authorization": "Bearer jina_你的API_KEY"
-      }
-    }
+  "env": {
+    "JINA_API_KEY": "jina_你的API_KEY"
   }
 }
 ```
 
-#### 验证配置
+或添加到 `~/.openclaw/.env`：
 
-重启 Gateway 后，Jina MCP 的 `read_url` 工具应该可用：
-
-```
-moltbot gateway restart
+```bash
+JINA_API_KEY=jina_你的API_KEY
 ```
 
-#### 可用工具
+**Step 3: 验证配置**
 
-- `read_url` - 网页 → Markdown (主工具)
-- `guess_datetime_url` - 提取发布日期
-- `search_web` - 网页搜索
-- `parallel_read_url` - 批量读取
-
-### 1. Image Extraction
-
-**MUST use `withAllImages: true`** when fetching articles:
-
-```typescript
-Tool: read_url
-Parameters:
-  url: {article_url}
-  withAllImages: true  // ← MANDATORY
+```bash
+# 测试 API 可用性
+curl -s "https://r.jina.ai/https://example.com" \
+  -H "Authorization: Bearer $JINA_API_KEY" | head -20
 ```
-
-### 2. Image Storage Strategy
-
-**Option A (Default): Download to Local**
-- Path: `public/images/docs/{slug}/`
-- Use when: Source doesn't support CORS, need offline availability
-
-**Option B: Use External URLs**
-- Keep original URLs in article
-- Use when: Source supports CORS (test with `curl -I`)
-
-### 3. Always Validate Images
-
-After fetching, verify `response.images` exists before proceeding.
 
 ## Workflow
 
@@ -99,16 +65,44 @@ Ask user:
 
 ### Step 2: Fetch Article Content
 
-Use Jina MCP `read_url` tool:
+**使用 Jina Reader API（curl 方式）**:
 
-```
-Tool: read_url
-Parameters:
-  url: {article_url}
-  withAllImages: true
+```bash
+# 获取文章内容（Markdown 格式）
+curl -s "https://r.jina.ai/{article_url}" \
+  -H "Authorization: Bearer ${JINA_API_KEY}" \
+  -o /tmp/article.md
+
+# 检查获取结果
+if [ ! -s /tmp/article.md ]; then
+  echo "❌ 文章获取失败"
+  exit 1
+fi
+
+echo "✅ 文章内容已获取"
+head -20 /tmp/article.md
 ```
 
-**Validate**: Check `response.images` array exists.
+**提取图片 URL**:
+
+```bash
+# 从 Markdown 中提取所有图片 URL
+grep -oE 'https://[^)]+\.(png|jpg|jpeg|webp|gif)' /tmp/article.md > /tmp/images.txt
+
+# 统计图片数量
+IMAGE_COUNT=$(wc -l < /tmp/images.txt)
+echo "📊 发现 ${IMAGE_COUNT} 张图片"
+```
+
+**尝试提取发布日期（可选）**:
+
+```bash
+# 使用 Jina 的日期检测 API
+curl -s "https://r.jina.ai/{article_url}" \
+  -H "Authorization: Bearer ${JINA_API_KEY}" \
+  -H "X-With-Generated-Summary: true" \
+  | grep -oE 'Published:.*|Updated:.*' || echo "日期未找到"
+```
 
 ### Step 3: Generate Slug
 
@@ -119,21 +113,36 @@ Create URL-friendly slug from title:
 
 ### Step 4: Process Images
 
-For each image in `response.images`:
+**图片下载和重命名（重要！）**:
 
-**If downloading (Option A)**:
 ```bash
-curl -o "public/images/docs/{slug}/{image-filename}" "{image-url}"
+# 创建图片目录
+mkdir -p public/images/docs/{slug}
+
+# 下载图片（使用安全的文件名）
+i=1
+while IFS= read -r img_url; do
+  # 使用 img01.png, img02.png 格式（避免连字符+数字）
+  printf -v filename "img%02d.png" $i
+
+  echo "下载: $img_url → $filename"
+  curl -s -o "public/images/docs/{slug}/$filename" "$img_url"
+
+  # 更新 Markdown 中的图片引用
+  sed -i "s|$img_url|/images/docs/{slug}/$filename|g" /tmp/article.md
+
+  ((i++))
+done < /tmp/images.txt
+
+echo "✅ 已下载 $((i-1)) 张图片"
 ```
 
-**Update MDX image references**:
-```mdx
-![Alt text](/images/docs/{slug}/image.png)
-```
+**图片文件名规则（重要！）**:
 
-**If using external URLs (Option B)**:
-- Keep original URLs
-- Verify CORS support first
+```
+❌ 错误：img-1.png, img-10.png（MDX 会解析 -1, -10 为表达式）
+✅ 正确：img01.png, img10.png, openclaw01.png（无连字符）
+```
 
 ### Step 5: Classify Article
 
