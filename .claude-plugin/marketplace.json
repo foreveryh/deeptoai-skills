@@ -1,0 +1,35 @@
+{
+  "name": "deeptoai-skills",
+  "owner": {
+    "name": "DeepToAI Team",
+    "email": "foreveryh@gmail.com"
+  },
+  "metadata": {
+    "description": "Skills for Fumadocs documentation automation and general content creation",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "fumadocs-skills",
+      "description": "Fumadocs 文档自动化发布：导入 → 翻译 → 发布",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/fumadocs/fumadocs-article-importer",
+        "./skills/fumadocs/article-translator",
+        "./skills/fumadocs/mdx-article-publisher",
+        "./skills/fumadocs/fumadocs-i18n-setup"
+      ]
+    },
+    {
+      "name": "general-skills",
+      "description": "通用内容创作工具：SVG 插图 + Skill 文档生成",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/general/philosophical-illustrator",
+        "./skills/general/skill-article-writer"
+      ]
+    }
+  ]
+}

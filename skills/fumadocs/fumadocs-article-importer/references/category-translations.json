@@ -1,0 +1,82 @@
+{
+  "ai-ml": {
+    "en": "AI & Machine Learning",
+    "zh": "AI 与机器学习",
+    "fr": "IA et Apprentissage Automatique",
+    "description": {
+      "en": "Artificial Intelligence and Machine Learning topics",
+      "zh": "人工智能和机器学习主题",
+      "fr": "Sujets sur l'intelligence artificielle et l'apprentissage automatique"
+    }
+  },
+  "development": {
+    "en": "Development",
+    "zh": "开发",
+    "fr": "Développement",
+    "description": {
+      "en": "Software development, programming, and coding",
+      "zh": "软件开发、编程和编码",
+      "fr": "Développement logiciel, programmation et codage"
+    }
+  },
+  "data": {
+    "en": "Data",
+    "zh": "数据",
+    "fr": "Données",
+    "description": {
+      "en": "Data analysis, databases, and data engineering",
+      "zh": "数据分析、数据库和数据工程",
+      "fr": "Analyse de données, bases de données et ingénierie des données",
+    }
+  },
+  "design": {
+    "en": "Design",
+    "zh": "设计",
+    "fr": "Design",
+    "description": {
+      "en": "UI/UX design, visual design, and design systems",
+      "zh": "UI/UX 设计、视觉设计和设计系统",
+      "fr": "Conception UI/UX, design visuel et systèmes de design",
+    }
+  },
+  "content": {
+    "en": "Content",
+    "zh": "内容",
+    "fr": "Contenu",
+    "description": {
+      "en": "Content creation, writing, and documentation",
+      "zh": "内容创作、写作和文档",
+      "fr": "Création de contenu, rédaction et documentation",
+    }
+  },
+  "business": {
+    "en": "Business",
+    "zh": "商业",
+    "fr": "Affaires",
+    "description": {
+      "en": "Business strategy, management, and entrepreneurship",
+      "zh": "商业策略、管理和创业",
+      "fr": "Stratégie commerciale, gestion et entrepreneuriat",
+    }
+  },
+  "devops": {
+    "en": "DevOps",
+    "zh": "DevOps",
+    "fr": "DevOps",
+    "description": {
+      "en": "DevOps, CI/CD, infrastructure, and deployment",
+      "zh": "DevOps、CI/CD、基础设施和部署",
+      "fr": "DevOps, CI/CD, infrastructure et déploiement",
+    }
+  },
+  "security": {
+    "en": "Security",
+    "zh": "安全",
+    "fr": "Sécurité",
+    "description": {
+      "en": "Security, privacy, and cybersecurity",
+      "zh": "安全、隐私和网络安全",
+      "fr": "Sécurité, confidentialité et cybersécurité",
+    }
+  }
+}
