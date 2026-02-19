@@ -18,6 +18,43 @@ Fumadocs 构建和部署验证工具，确保所有资源正确部署。
 
 ## 完整流程
 
+### Step 0: 配置检查（重要！）
+
+**检查 Next.js 配置**:
+
+```bash
+# 静态导出必须禁用图片优化
+if ! grep -q "unoptimized: true" next.config.mjs; then
+  echo "❌ 缺少 images.unoptimized: true"
+  echo ""
+  echo "请在 next.config.mjs 中添加："
+  echo ""
+  echo "export default {"
+  echo "  output: 'export',"
+  echo "  images: {"
+  echo "    unoptimized: true,"
+  echo "  },"
+  echo "}"
+  exit 1
+fi
+
+echo "✅ Next.js 配置正确"
+```
+
+**检查 i18n 配置（如果使用多语言）**:
+
+```bash
+# 检查 UI 翻译文件是否完整
+for lang in en zh-CN fr; do
+  if [ ! -f "libs/i18n/locales/$lang.ts" ]; then
+    echo "⚠️  缺少 $lang.ts 翻译文件"
+  else
+    lines=$(wc -l < "libs/i18n/locales/$lang.ts")
+    echo "✅ $lang.ts: $lines 行"
+  fi
+done
+```
+
 ### Step 1: 清理缓存
 
 **清理构建缓存**:
@@ -152,6 +189,32 @@ CSS: 200
 ```
 
 ## 部署后检查
+
+### 检查 Next.js 配置（重要！）
+
+**静态导出必须禁用图片优化**:
+
+```javascript
+// next.config.mjs 或 next.config.js
+export default {
+  output: 'export',
+  images: {
+    unoptimized: true, // ← 必须！静态导出时图片优化 API 不可用
+  },
+  trailingSlash: true,
+}
+```
+
+**如果未禁用，会出现**:
+- `/_next/image?url=...` 返回 404
+- 图片无法加载
+
+**验证配置**:
+
+```bash
+# 检查配置文件
+grep "unoptimized: true" next.config.mjs || echo "⚠️  需要添加 images.unoptimized: true"
+```
 
 ### 检查图片可访问性
 

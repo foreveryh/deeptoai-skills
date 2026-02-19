@@ -106,7 +106,49 @@ Apply professional translation principles:
 - Technical terms: Use industry-standard terminology
 - Tone: Professional but accessible
 
-### Step 4: MDX Safety Rules (Critical!)
+### Step 4: Translation Integrity Check (Critical!)
+
+**⚠️ 防止 "中文显示英文" 问题**:
+
+**检查清单**（翻译后必须验证）:
+
+```bash
+# 1. 检查文件是否真的被翻译（不是复制英文）
+# 对比中英文文件的前 100 个字符
+diff <(head -c 100 content/docs/en/article.mdx) \
+     <(head -c 100 content/docs/zh-CN/article.mdx)
+
+# 如果输出为空，说明中文版是直接复制的！
+# 必须重新翻译
+```
+
+**自动检测未翻译内容**:
+
+```bash
+# 检测中文文件中是否包含英文段落
+grep -E '\b(is|the|and|to|for|with|from)\b' content/docs/zh-CN/article.mdx
+
+# 如果有大量匹配，说明翻译不完整
+```
+
+**常见问题**:
+
+| 问题 | 原因 | 解决方案 |
+|------|------|----------|
+| 中文显示英文 | 直接复制英文文件 | 使用 article-translator 重新翻译 |
+| 部分未翻译 | 只翻译了部分段落 | 检查并翻译所有段落 |
+| 标题未翻译 | 忘记翻译 frontmatter | 翻译 title 和 description |
+
+**必须验证的字段**:
+
+```yaml
+---
+title: 必须翻译
+description: 必须翻译
+---
+```
+
+### Step 5: MDX Safety Rules (Critical!)
 
 **MDX 特殊字符处理（必须遵守）**:
 

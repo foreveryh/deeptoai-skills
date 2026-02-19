@@ -75,6 +75,45 @@ awk '/^```/{flag=1-flag} END{if(flag)print "❌ 未闭合的代码块"}' *.mdx
 grep -n '^```[^a-z]*$' *.mdx | grep -v '^.*:.*````*$'
 ```
 
+### 5. 翻译完整性检查
+
+**检测未翻译内容**:
+
+```bash
+# 检查中文文件中的英文单词
+for f in content/docs/zh-CN/*.mdx; do
+  english=$(grep -oE '\b(is|the|and|to|for|with|from)\b' "$f" | wc -l)
+  if [ $english -gt 10 ]; then
+    echo "⚠️  $f: 可能未翻译（发现 $english 个英文单词）"
+  fi
+done
+
+# 检查文件内容是否与英文版相同
+for f in content/docs/zh-CN/*.mdx; do
+  en_file="${f/zh-CN/en}"
+  if [ -f "$en_file" ]; then
+    if diff -q "$f" "$en_file" > /dev/null 2>&1; then
+      echo "❌ $f: 内容与英文版相同，未翻译！"
+    fi
+  fi
+done
+```
+
+**检查 frontmatter 翻译**:
+
+```bash
+# 确保 title 和 description 已翻译
+for f in *.mdx; do
+  title=$(grep '^title:' "$f" | head -1)
+  desc=$(grep '^description:' "$f" | head -1)
+
+  # 如果是中文文件但 title 包含英文
+  if [[ "$f" == *"zh-CN"* ]] && echo "$title" | grep -qE '[A-Za-z]{5,}'; then
+    echo "⚠️  $f: title 可能未翻译"
+  fi
+done
+```
+
 ## 自动修复
 
 ### 修复特殊字符
